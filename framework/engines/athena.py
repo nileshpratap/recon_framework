@@ -1,3 +1,4 @@
+import framework.utils.LoggerUtils as logger
 import boto3
 import pandas as pd
 import time
@@ -35,14 +36,46 @@ class AthenaConnector:
 
         if status == 'SUCCEEDED':
             results = self.fetch_results(query_execution_id)
-            # Convert results to DataFrame
             rows = results['ResultSet']['Rows']
             columns = [col['VarCharValue'] for col in rows[0]['Data']]
             data = [
                 [col.get('VarCharValue', '') for col in row['Data']]
-                for row in rows[1:]  # Skip header row
+                for row in rows[1:]  
             ]
             df = pd.DataFrame(data, columns=columns)
             return df
         else:
             raise Exception(f"Query failed with status: {status}")
+        
+    def get_total_count(self, table_name):
+        Query = f"select count(*) from {table_name} as Total_Count"
+        result_df = self.query_to_dataframe(Query)
+        logger.info(f"{result_df}")
+        return result_df.iat[0, 0]
+    
+    def get_distinct_pk_count(self, table_name, pk_list):
+        if pk_list is None or len(pk_list) == 0:
+            logger.warning(f"The pk_list provided is either None or have no elements. Getting the total count.")
+            return self.get_total_count(table_name=table_name)
+        else:
+            pk_ls = ', '.join(map(str, pk_list))
+            logger.info(f"The provided list of primary key is [{pk_ls}]")
+            Query = f"select count(distinct({pk_ls})) from {table_name} as Distinct_PK_Count"
+            result_df = self.query_to_dataframe(Query)
+            logger.info(f"{result_df}")
+        return result_df.iat[0, 0]
+    
+    def get_ddl(self, table_name):
+        response = self.client.get_table_metadata(
+            DatabaseName=self.database,
+            TableName=table_name
+        )        
+        columns = response['Table']['StorageDescriptor']['Columns']
+        column_dict = {col['Name']: col['Type'] for col in columns}
+        logger.info(f"DDL for the table {table_name} is : \n {column_dict}")
+        return column_dict
+
+    def get_data(self, table_name):
+        Query = f"select * from {table_name};"
+        result_df = self.query_to_dataframe(Query)
+        return result_df

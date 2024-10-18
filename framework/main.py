@@ -1,5 +1,8 @@
 from framework.engines.oracle import oracle
 from framework.engines.snowflake import snowflake 
+from framework.engines.jdbc import JDBCConnector 
+from framework.engines.athena import AthenaConnector 
+
 
 class test_handler(object):
     def __init__(self, Config):
@@ -22,8 +25,18 @@ class test_handler(object):
         if not func_name:
             return None
         
+        module = None
+        if engine == 'oracle':
+            module = oracle
+        elif engine == 'snowflake':
+            module = snowflake
+        elif  engine == 'jdbc':
+            module = JDBCConnector
+        elif engine == 'athena':
+            module = AthenaConnector
+
         # module = oracle if engine == 'oracle' else snowflake if engine == 'snowflake' else None
-        # if not module:
-        #     return None
+        if not module:
+            return None
         
-        # return getattr(module, func_name)(details)
+        return getattr(module, func_name)(details)

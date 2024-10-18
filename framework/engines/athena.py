@@ -14,14 +14,16 @@ class AthenaConnector:
             QueryExecutionContext={'Database': self.database},
             ResultConfiguration={'OutputLocation': self.s3_output}
         )
+        return response['QueryExecutionId']
+       
+    def wait_for_query_to_complete(self, query_execution_id):
         while True:
-            response_msg = self.client.get_query_execution(QueryExecutionId=response['QueryExecutionId'])
+            response_msg = self.client.get_query_execution(QueryExecutionId=query_execution_id)
             status = response_msg['QueryExecution']['Status']['State']
             if status in ['SUCCEEDED', 'FAILED', 'CANCELLED']:
                 return status
             time.sleep(1)
-        return response['QueryExecutionId']
-       
+
 
     def fetch_results(self, query_execution_id):
         results = self.client.get_query_results(QueryExecutionId=query_execution_id)

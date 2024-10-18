@@ -1,5 +1,5 @@
 import framework.utils.LoggerUtils as logger
-import sqlalchemy
+from sqlalchemy import *
 import pandas as pd
 
 class JDBCConnector:
@@ -43,7 +43,7 @@ class JDBCConnector:
             conn.close()
             return ddl
         except Exception as e:
-            logger.error(f'Failure in getting the {table_name} ddl')
+            logger.error(f"Failure in getting the {table_name} ddl: {str(e)}")
             raise (e)
 
     def get_data(self, table_name):

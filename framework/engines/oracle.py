@@ -1,18 +1,12 @@
-import cx_Oracle
-# from com.lumiq.framework.utils.AuditLogUtils import AuditLogUtils as AuditLogger
-# from com.lumiq.framework.utils.JobUtils import JobUtils as Jb
+# import cx_Oracle
 import logging as logs
 import pandas as pd
 from framework.utils.SecretUtils import SecretUtils as Sr
 from framework.utils.ConfigUtils import ConfigUtils
+from framework.utils.LoggerUtils import LoggerUtils as logger
 
 py4j_logger = logs.getLogger("py4j").setLevel(logs.INFO)
-Config = ConfigUtils().getConfig()
-if Config.has_section('Audit'):
-    if Config.has_option('Audit','Audit.log.level'):
-        log_level = Config.get('Audit','Audit.log.level')
-        logs.basicConfig()
-        logs.getLogger().setLevel(getattr(logs,log_level))
+
 
 class oracle(object):
     def __init__(self, Config):

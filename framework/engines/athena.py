@@ -3,7 +3,7 @@ import boto3
 import pandas as pd
 import time
 
-class AthenaConnector:
+class athena(object):
     def __init__(self, database, s3_output):
         self.database = database
         self.s3_output = s3_output

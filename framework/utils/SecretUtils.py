@@ -5,13 +5,6 @@ from botocore.exceptions import ClientError
 from framework.utils.ConfigUtils import ConfigUtils
 
 
-py4j_logger = logs.getLogger("py4j").setLevel(logs.INFO)
-Config = ConfigUtils().getConfig()
-if Config.has_section('Audit'):
-    if Config.has_option('Audit','Audit.log.level'):
-        log_level = Config.get('Audit','Audit.log.level')
-        logs.basicConfig()
-        logs.getLogger().setLevel(getattr(logs,log_level))
 class SecretUtils():
     @staticmethod
     def getSecret(secret_name, region_name="ap-south-1"):

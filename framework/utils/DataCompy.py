@@ -1,5 +1,6 @@
 import framework.utils.LoggerUtils as logger
 import datacompy
+import pandas as pd
 
 
 def compare_dataframes(df1, df2):

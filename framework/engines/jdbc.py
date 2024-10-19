@@ -4,7 +4,7 @@ import pandas as pd
 import boto3
 import json
 
-class JDBCConnector:
+class jdbc(object):
     def __init__(self, secret_key):
         self.secret_key = secret_key
         self.connection_string = self.build_connection_string()

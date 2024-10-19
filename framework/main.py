@@ -1,7 +1,5 @@
-from framework.engines.oracle import oracle
-from framework.engines.snowflake import snowflake 
-from framework.engines.jdbc import JDBCConnector 
-from framework.engines.athena import AthenaConnector 
+from framework.utils.LoggerUtils import LoggerUtils as logger
+from framework.factory.ClassFactory import ClassFactory as cf 
 
 
 class test_handler(object):
@@ -21,22 +19,7 @@ class test_handler(object):
             'data_check': 'getData'
         }
 
-        func_name = test_map.get(test_name)
-        if not func_name:
-            return None
-        
-        module = None
-        if engine == 'oracle':
-            module = oracle
-        elif engine == 'snowflake':
-            module = snowflake
-        elif  engine == 'jdbc':
-            module = JDBCConnector
-        elif engine == 'athena':
-            module = AthenaConnector
-
-        # module = oracle if engine == 'oracle' else snowflake if engine == 'snowflake' else None
-        if not module:
-            return None
+        func_name = test_map.get(test_name) if test_map.get(test_name) else None
+        module = cf.getEngineClass(engine)
         
         return getattr(module, func_name)(details)

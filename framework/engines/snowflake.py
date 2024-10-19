@@ -1,18 +1,8 @@
 import snowflake.connector
-# from com.lumiq.framework.utils.AuditLogUtils import AuditLogUtils as AuditLogger
-# from com.lumiq.framework.utils.JobUtils import JobUtils as Jb
-import logging as logs
 import pandas as pd
 from framework.utils.SecretUtils import SecretUtils as Sr
 from framework.utils.ConfigUtils import ConfigUtils
-
-py4j_logger = logs.getLogger("py4j").setLevel(logs.INFO)
-Config = ConfigUtils().getConfig()
-if Config.has_section('Audit'):
-    if Config.has_option('Audit','Audit.log.level'):
-        log_level = Config.get('Audit','Audit.log.level')
-        logs.basicConfig()
-        logs.getLogger().setLevel(getattr(logs,log_level))
+from framework.utils.LoggerUtils import LoggerUtils as logger
 
 class snowflake(object):
     def __init__(self, Config):
@@ -24,7 +14,7 @@ class snowflake(object):
         secret_details = Sr.getSecret(secret_name=secret_key)
         if not isinstance(secret_details, dict):
             msg = f"Invalid Secret Found {secret_key}"
-            logs.error(msg)
+            logger.error(msg)
             raise ValueError(msg)
         else:
             return secret_details
@@ -158,3 +148,8 @@ class snowflake(object):
         finally:
             cursor.close()
             connection.close()
+
+    def abc(details):
+        logger.info('asdasd')
+
+    Engine = "snowflake"

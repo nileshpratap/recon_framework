@@ -1,11 +1,33 @@
 import framework.utils.LoggerUtils as logger
-from sqlalchemy import *
+from sqlalchemy import create_engine
 import pandas as pd
+import boto3
+import json
 
 class JDBCConnector:
-    def __init__(self, connection_string):
-        self.connection_string = connection_string
+    def __init__(self, secret_key):
+        self.secret_key = secret_key
+        self.connection_string = self.build_connection_string()
+
+        # SQLAlchemy engine creation
         self.engine = create_engine(self.connection_string)
+
+    def build_connection_string(self):
+        # Initialize AWS Secrets Manager client
+        client = boto3.client('secretsmanager')
+        secret_value = client.get_secret_value(SecretId=self.secret_key)
+        secret = json.loads(secret_value['SecretString'])
+
+        # Build JDBC connection string
+        engine = secret['engine']
+        host = secret['host']
+        port = secret['port']
+        dbname = secret['dbname']
+        username = secret['username']
+        password = secret['password']
+
+        connection_string = f"{engine}://{username}:{password}@{host}:{port}/{dbname}"
+        return connection_string
 
     def get_connection(self):
         return self.engine.connect()
@@ -20,7 +42,6 @@ class JDBCConnector:
             return total_count
         except Exception as e:
             logger.error(e)
-
 
     def get_distinct_pk_count(self, table_name, pk_column):
         try:
@@ -37,9 +58,15 @@ class JDBCConnector:
     def get_ddl(self, table_name):
         try:
             with self.get_connection() as conn:
-                query = f"SHOW CREATE TABLE {table_name}"  
+                query = f"""
+                SELECT column_name, data_type
+                FROM information_schema.columns
+                WHERE table_name = '{table_name}';
+                """  
                 result = conn.execute(query)
-                ddl = result.fetchone()[1]  
+                ddl = {row['column_name']: row['data_type'] for row in result.fetchall()}
+                logger.info(f"DDL for the table {table_name} is : \n {ddl}")
+
             conn.close()
             return ddl
         except Exception as e:
@@ -56,4 +83,3 @@ class JDBCConnector:
         except Exception as e:
             logger.error(f'Failure in getting the source data for {table_name}.')
             raise(e)
-

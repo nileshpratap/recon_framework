@@ -1,8 +1,8 @@
 import snowflake.connector
-import pandas as pd
 from framework.utils.SecretUtils import SecretUtils as Sr
 from framework.utils.ConfigUtils import ConfigUtils
 from framework.utils.LoggerUtils import LoggerUtils as logger
+
 
 class snowflake(object):
     def __init__(self, Config):
@@ -10,19 +10,14 @@ class snowflake(object):
         pass
 
     @staticmethod
-    def get_Secret_Details(secret_key):
-        secret_details = Sr.getSecret(secret_name=secret_key)
-        if not isinstance(secret_details, dict):
-            msg = f"Invalid Secret Found {secret_key}"
-            logger.error(msg)
-            raise ValueError(msg)
-        else:
-            return secret_details
-
-    @staticmethod
     def getConnection(details):
         try:
-            secret_details = snowflake.get_Secret_Details(details['secret_key'])
+            secret_details = Sr.getSecret(secret_name=details['secret_key'])
+            if not isinstance(secret_details, dict):
+                msg = f"Invalid Secret Found {details['secret_key']}"
+                logger.error(msg)
+                raise ValueError(msg)
+
             conn_details = {
                 'user': secret_details['username'],
                 'password': secret_details['password'],
@@ -38,11 +33,15 @@ class snowflake(object):
             return cursor, connection
         
         except snowflake.connector.Error as e:
-            print(f"Snowflake connection error: {e}")
+            logger.error(f"Snowflake connection error: {e}")
             return None, None
 
+        except ValueError as ve:
+            logger.error(f"Value error: {ve}")
+            return None, None
+        
         except Exception as ex:
-            print(f"An unexpected error occurred in snowflake connection: {ex}")
+            logger.error(f"An unexpected error occurred in snowflake connection: {ex}")
             return None, None
 
 
@@ -67,7 +66,7 @@ class snowflake(object):
             return total_count, distinct_pk_count
         
         except Exception as ex:
-            print(f"An unexpected error occurred in Count Test: {ex}")
+            logger.error(f"An unexpected error occurred in Count Test: {ex}")
             return None
         finally:
             cursor.close()
@@ -93,7 +92,7 @@ class snowflake(object):
             return ddl
         
         except Exception as ex:
-            print(f"An unexpected error occurred in DDL Test: {ex}")
+            logger.error(f"An unexpected error occurred in DDL Test: {ex}")
             return None
         finally:
             cursor.close()
@@ -115,7 +114,7 @@ class snowflake(object):
             return result
         
         except Exception as ex:
-            print(f"An unexpected error occurred in Functional Check: {ex}")
+            logger.error(f"An unexpected error occurred in Functional Check: {ex}")
             return None
         finally:
             cursor.close()
@@ -143,13 +142,9 @@ class snowflake(object):
             return result
 
         except Exception as ex:
-            print(f"An unexpected error occurred in Data Match Test:: {ex}")
+            logger.error(f"An unexpected error occurred in Data Match Test:: {ex}")
             return None
         finally:
             cursor.close()
             connection.close()
 
-    def abc(details):
-        logger.info('asdasd')
-
-    Engine = "snowflake"

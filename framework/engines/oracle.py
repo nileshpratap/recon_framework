@@ -1,11 +1,8 @@
-# import cx_Oracle
+import cx_Oracle
 import logging as logs
-import pandas as pd
 from framework.utils.SecretUtils import SecretUtils as Sr
 from framework.utils.ConfigUtils import ConfigUtils
 from framework.utils.LoggerUtils import LoggerUtils as logger
-
-py4j_logger = logs.getLogger("py4j").setLevel(logs.INFO)
 
 
 class oracle(object):
@@ -14,19 +11,14 @@ class oracle(object):
         pass
 
     @staticmethod
-    def get_Secret_Details(secret_key):
-        secret_details = Sr.getSecret(secret_name=secret_key)
-        if not isinstance(secret_details, dict):
-            msg = f"Invalid Secret Found {secret_key}"
-            logs.error(msg)
-            raise ValueError(msg)
-        else:
-            return secret_details
-
-    @staticmethod
     def getConnection(details):
         try:
-            secret_details = oracle.get_Secret_Details(details['secret_key'])
+            secret_details = Sr.getSecret(secret_name=details['secret_key'])
+            if not isinstance(secret_details, dict):
+                msg = f"Invalid Secret Found {details['secret_key']}"
+                logger.error(msg)
+                raise ValueError(msg)
+
             username = secret_details['username']
             password = secret_details['password']
             host = details['host']
@@ -44,15 +36,15 @@ class oracle(object):
         
         except cx_Oracle.DatabaseError as e:
             error, = e.args
-            print(f"Database error occurred: {error.message}")
+            logger.error(f"Database error occurred: {error.message}")
             return None, None
         
         except ValueError as ve:
-            print(f"Value error: {ve}")
+            logger.error(f"Value error: {ve}")
             return None, None
         
         except Exception as ex:
-            print(f"An unexpected error occurred: {ex}")
+            logger.error(f"An unexpected error occurred: {ex}")
             return None, None
     
     @staticmethod
@@ -75,7 +67,7 @@ class oracle(object):
 
             return total_count, distinct_pk_count
         except cx_Oracle.Error as e:
-            print(f"Error executing Count Test: {e}")
+            logger.error(f"Error executing Count Test: {e}")
             return None
         finally:
             cursor.close()
@@ -97,7 +89,7 @@ class oracle(object):
 
             return ddl
         except cx_Oracle.Error as e:
-            print(f"Error executing DDL Test: {e}")
+            logger.error(f"Error executing DDL Test: {e}")
             return None
         finally:
             cursor.close()
@@ -120,7 +112,7 @@ class oracle(object):
 
             return result
         except cx_Oracle.Error as e:
-            print(f"Error executing Functional Check: {e}")
+            logger.error(f"Error executing Functional Check: {e}")
             return None
         finally:
             cursor.close()
@@ -147,7 +139,7 @@ class oracle(object):
 
             return result
         except cx_Oracle.Error as e:
-            print(f"Error executing Data Match Test: {e}")
+            logger.error(f"Error executing Data Match Test: {e}")
             return None
         finally:
             cursor.close()

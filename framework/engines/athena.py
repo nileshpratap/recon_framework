@@ -1,6 +1,5 @@
 import framework.utils.LoggerUtils as logger
 import boto3
-import pandas as pd
 import time
 
 class athena(object):
@@ -42,8 +41,8 @@ class athena(object):
                 [col.get('VarCharValue', '') for col in row['Data']]
                 for row in rows[1:]  
             ]
-            df = pd.DataFrame(data, columns=columns)
-            return df
+            # df = pd.DataFrame(data, columns=columns)
+            return data
         else:
             raise Exception(f"Query failed with status: {status}")
         

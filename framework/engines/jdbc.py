@@ -1,6 +1,5 @@
 import framework.utils.LoggerUtils as logger
 from sqlalchemy import create_engine
-import pandas as pd
 import boto3
 import json
 
@@ -72,14 +71,3 @@ class jdbc(object):
         except Exception as e:
             logger.error(f"Failure in getting the {table_name} ddl: {str(e)}")
             raise (e)
-
-    def get_data(self, table_name):
-        try:
-            with self.get_connection() as conn:
-                query = f"SELECT * FROM {table_name}"
-                df = pd.read_sql(query, conn)
-            conn.close()
-            return df
-        except Exception as e:
-            logger.error(f'Failure in getting the source data for {table_name}.')
-            raise(e)

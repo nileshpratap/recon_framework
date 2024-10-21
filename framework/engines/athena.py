@@ -75,7 +75,4 @@ class athena(object):
         logger.info(f"DDL for the table {table_name} is : \n {column_dict}")
         return column_dict
 
-    def get_data(self, table_name):
-        Query = f"select * from {table_name};"
-        result_df = self.query_to_dataframe(Query)
-        return result_df
+    

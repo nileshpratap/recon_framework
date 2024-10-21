@@ -42,4 +42,13 @@ class data_comparator(object):
             df2_name=f'{details['table_name']}_target'
         )
         logger.info(comparison.report())
-        return comparison
+        comparison_result = {
+            "match": comparison.matches(),
+            "mismatch_count": comparison.intersect_rows_mismatch,
+            "df1_unmatched_rows": comparison.df1_unq_rows,
+            "df2_unmatched_rows": comparison.df2_unq_rows,
+            "df1_columns_missing_in_df2": comparison.df1.columns.difference(comparison.df2.columns).tolist(),
+            "df2_columns_missing_in_df1": comparison.df2.columns.difference(comparison.df1.columns).tolist()
+        }
+
+        return comparison_result

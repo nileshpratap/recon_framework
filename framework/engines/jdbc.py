@@ -4,6 +4,8 @@ import boto3
 import json
 
 class jdbc(object):
+    # engine = None
+    # if engine
     def __init__(self, secret_key):
         self.secret_key = secret_key
         self.connection_string = self.build_connection_string()
@@ -13,7 +15,7 @@ class jdbc(object):
 
     def build_connection_string(self):
         # Initialize AWS Secrets Manager client
-        client = boto3.client('secretsmanager')
+        client = boto3.client('secretsmanager', region_name = 'ap-south-1')
         secret_value = client.get_secret_value(SecretId=self.secret_key)
         secret = json.loads(secret_value['SecretString'])
 
@@ -31,7 +33,7 @@ class jdbc(object):
     def get_connection(self):
         return self.engine.connect()
 
-    def get_total_count(self, table_name):
+    def getTotalCount(self, table_name):
         try:
             with self.get_connection() as conn:
                 query = f"SELECT COUNT(*) FROM {table_name}"
@@ -42,7 +44,7 @@ class jdbc(object):
         except Exception as e:
             logger.error(e)
 
-    def get_distinct_pk_count(self, table_name, pk_column):
+    def getPKCount(self, table_name, pk_column):
         try:
             with self.get_connection() as conn:
                 query = f"SELECT COUNT(DISTINCT {pk_column}) FROM {table_name}"
@@ -54,7 +56,7 @@ class jdbc(object):
             logger.error(e)
             raise(e)
 
-    def get_ddl(self, table_name):
+    def getDDL(self, table_name):
         try:
             with self.get_connection() as conn:
                 query = f"""
@@ -71,3 +73,18 @@ class jdbc(object):
         except Exception as e:
             logger.error(f"Failure in getting the {table_name} ddl: {str(e)}")
             raise (e)
+
+    def get_data(self, table_name):
+        try:
+            with self.get_connection() as conn:
+                query = f"SELECT * FROM {table_name}"
+                result = conn.execute(query)
+                # df = pd.read_sql(query, conn)
+            conn.close()
+
+            columns = [desc[0] for desc in result.context.cursor.description]
+            
+            return result, columns
+        except Exception as e:
+            logger.error(f'Failure in getting the source data for {table_name}.')
+            raise(e)

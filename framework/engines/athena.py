@@ -6,7 +6,7 @@ class athena(object):
     def __init__(self, database, s3_output):
         self.database = database
         self.s3_output = s3_output
-        self.client = boto3.client('athena')
+        self.client = boto3.client('athena', region_name = 'ap-south-1')
 
     def execute_query(self, query):
         response = self.client.start_query_execution(
@@ -29,30 +29,46 @@ class athena(object):
         results = self.client.get_query_results(QueryExecutionId=query_execution_id)
         return results
 
-    def query_to_dataframe(self, query):
-        query_execution_id = self.execute_query(query)
+    # def query_to_dataframe(self, query):
+    #     query_execution_id = self.execute_query(query)
+    #     status = self.wait_for_query_to_complete(query_execution_id)
+
+    #     if status == 'SUCCEEDED':
+    #         results = self.fetch_results(query_execution_id)
+    #         rows = results['ResultSet']['Rows']
+    #         columns = [col['VarCharValue'] for col in rows[0]['Data']]
+    #         data = [
+    #             [col.get('VarCharValue', '') for col in row['Data']]
+    #             for row in rows[1:]  
+    #         ]
+    #         # df = pd.DataFrame(data, columns=columns)
+    #         return data
+    #     else:
+    #         raise Exception(f"Query failed with status: {status}")
+        
+    def getTotalCount(self, table_name):
+        Query = f"select count(*) from {table_name} as Total_Count"
+        # result_df = self.query_to_dataframe(Query)
+        query_execution_id = self.execute_query(Query)
         status = self.wait_for_query_to_complete(query_execution_id)
+
 
         if status == 'SUCCEEDED':
             results = self.fetch_results(query_execution_id)
             rows = results['ResultSet']['Rows']
-            columns = [col['VarCharValue'] for col in rows[0]['Data']]
-            data = [
-                [col.get('VarCharValue', '') for col in row['Data']]
-                for row in rows[1:]  
-            ]
+            total_count = int(rows[0]['Data']['VarCharValue'])
+            # data = [
+            #     [col.get('VarCharValue', '') for col in row['Data']]
+            #     for row in rows[1:]  
+            # ]
             # df = pd.DataFrame(data, columns=columns)
-            return data
+            return total_count
         else:
             raise Exception(f"Query failed with status: {status}")
-        
-    def get_total_count(self, table_name):
-        Query = f"select count(*) from {table_name} as Total_Count"
-        result_df = self.query_to_dataframe(Query)
-        logger.info(f"{result_df}")
-        return result_df.iat[0, 0]
+
+
     
-    def get_distinct_pk_count(self, table_name, pk_list):
+    def getPKCount(self, table_name, pk_list):
         if pk_list is None or len(pk_list) == 0:
             logger.warning(f"The pk_list provided is either None or have no elements. Getting the total count.")
             return self.get_total_count(table_name=table_name)
@@ -60,11 +76,25 @@ class athena(object):
             pk_ls = ', '.join(map(str, pk_list))
             logger.info(f"The provided list of primary key is [{pk_ls}]")
             Query = f"select count(distinct({pk_ls})) from {table_name} as Distinct_PK_Count"
-            result_df = self.query_to_dataframe(Query)
-            logger.info(f"{result_df}")
-        return result_df.iat[0, 0]
+            # result_df = self.query_to_dataframe(Query)
+            query_execution_id = self.execute_query(Query)
+            status = self.wait_for_query_to_complete(query_execution_id)
+
+            if status == 'SUCCEEDED':
+                results = self.fetch_results(query_execution_id)
+                rows = results['ResultSet']['Rows']
+                pk_count = int(rows[0]['Data']['VarCharValue'])
+                # data = [
+                #     [col.get('VarCharValue', '') for col in row['Data']]
+                #     for row in rows[1:]  
+                # ]
+                # df = pd.DataFrame(data, columns=columns)
+                return pk_count
+            else:
+                raise Exception(f"Query failed with status: {status}")
+
     
-    def get_ddl(self, table_name):
+    def getDDL(self, table_name):
         response = self.client.get_table_metadata(
             DatabaseName=self.database,
             TableName=table_name
@@ -74,4 +104,28 @@ class athena(object):
         logger.info(f"DDL for the table {table_name} is : \n {column_dict}")
         return column_dict
 
-    
+    def getData(self, table_name):
+        Query = f"select * from {table_name};"
+        # result_df = self.query_to_dataframe(Query)
+        query_execution_id = self.execute_query(Query)
+        status = self.wait_for_query_to_complete(query_execution_id)
+        if status == 'SUCCEEDED':
+            results = self.fetch_results(query_execution_id)
+            rows = results['ResultSet']['Rows']
+            pk_count = int(rows[0]['Data']['VarCharValue'])
+            metadata = response['ResultSet']['ResultSetMetadata']['ColumnInfo']
+
+            # Create a list of dictionaries
+            data = []
+            for row in rows:
+                row_data = dict(zip([col['Name'] for col in metadata], row['Data']))
+                data.append(row_data)
+            return data, None
+        else:
+            raise Exception(f"Query failed with status: {status}")
+        
+        
+        
+
+
+

@@ -1,0 +1,112 @@
+[
+    {
+        "source": {
+            "account": "iz53102.ap-south-1.privatelink",
+            "warehouse": "ETL_UAT_WH",
+            "db_name": "PROD_DWH_MIGRATED_DB",
+            "schema": "PROD",
+            "role": "ETL_DEV_ROLE",
+            "engine": "snowflake",
+            "username": "ETL_DEV_USER",
+            "password": "etl@USER123"
+        },
+        "destination": {
+            "account": "iz53102.ap-south-1.privatelink",
+            "warehouse": "ETL_UAT_WH",
+            "db_name": "BAGIC_DEV_CURATED_DB",
+            "schema": "TRANSACTIONAL",
+            "role": "ETL_DEV_ROLE",
+            "engine": "snowflake",
+            "username": "ETL_DEV_USER",
+            "password": "etl@USER123"
+        },
+        "tables": [
+            {
+                "fun_rcon": [
+                    {
+                        "chk_id": 1,
+                        "sum": [
+                            "SALVAGE_AMT",
+                            "RESERVE_AMOUNT",
+                            "PAID_CLAIM"
+                        ],
+                        "avg": [
+                            "SALVAGE_AMT",
+                            "RESERVE_AMOUNT",
+                            "PAID_CLAIM"
+                        ]
+                    }
+                ],
+                "src": {
+                    "name": "MV_CLAIM_REGISTER",
+                    "condition": "T_DATE_DESC = CURRENT_DATE() - 2"
+                },
+                "dest": {
+                    "name": "MV_CLAIM_REGISTER",
+                    "condition": "T_DATE_DESC = CURRENT_DATE() - 2"
+                }
+                
+            },
+            {
+                "fun_rcon": [
+                    {
+                        "chk_id": 1,
+                        "sum": [
+                            "SALVAGE_AMOUNT",
+                            "RESERVE_AMOUNT",
+                            "PAID_CLAIM_AMOUNT"
+                        ],
+                        "avg": [
+                            "SALVAGE_AMOUNT",
+                            "RESERVE_AMOUNT",
+                            "PAID_CLAIM_AMOUNT"
+                        ]
+                    }
+                ],
+                "src": {
+                    "name": "ODS_CLAIM_FACT",
+                    "condition": "T_DATE_ID_SK = (SELECT T_DATE_ID_SK FROM PROD_DWH_MIGRATED_DB.PROD.ODS_TIME_DIM WHERE T_DATE_DESC = CURRENT_DATE() - 2)"
+                },
+                "dest": {
+                    "name": "ODS_CLAIM_FACT",
+                    "condition": "T_DATE_ID_SK = (SELECT T_DATE_ID_SK FROM PROD_DWH_MIGRATED_DB.PROD.ODS_TIME_DIM WHERE T_DATE_DESC = CURRENT_DATE() - 2)"
+                }
+            },
+            {
+                "fun_rcon": [
+                    {
+                        "chk_id": 1,
+                        "sum": [
+                            "SALVAGE_AMOUNT",
+                            "RESERVE_AMOUNT",
+                            "PAID_CLAIM"
+                        ],
+                        "avg": [
+                            "SALVAGE_AMOUNT",
+                            "RESERVE_AMOUNT",
+                            "PAID_CLAIM"
+                        ]
+                    }
+                ],
+                "src": {
+                    "name": "ODS_CLAIM_FACT_MV",
+                    "condition": "T_DATE_ID_SK = (SELECT T_DATE_ID_SK FROM PROD_DWH_MIGRATED_DB.PROD.ODS_TIME_DIM WHERE T_DATE_DESC = CURRENT_DATE() - 2)"
+                },
+                "dest": {
+                    "name": "ODS_CLAIM_FACT_MV",
+                    "condition": "T_DATE_ID_SK = (SELECT T_DATE_ID_SK FROM PROD_DWH_MIGRATED_DB.PROD.ODS_TIME_DIM WHERE T_DATE_DESC = CURRENT_DATE() - 2)"
+                }
+            },
+            {
+                "src": {
+                    "name": "ODS_CLAIM_DIM",
+                    "condition": ""
+                },
+                "dest": {
+                    "name": "ODS_CLAIM_DIM",
+                    "condition": ""
+                }
+            }
+        ]
+    }
+]

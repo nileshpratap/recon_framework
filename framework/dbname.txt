@@ -1,0 +1,11 @@
+dbname
+hletlife
+host
+hletlifeprd.conbkgroo3tm.ap-south-1.rds.amazonaws.com
+port
+1521
+username
+hl_etlife_outbound_landing2_prod
+password
+Etli#hL97
+engine

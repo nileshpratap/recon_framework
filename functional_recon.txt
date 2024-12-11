@@ -1,0 +1,47 @@
+Input:
+
+"fun_rcon":[
+	{"chk_id":1,
+	"condition":"t_date_desc = '2024-11-20 00:00:00.000'",
+	"sum":["col1", "col2"],
+	"unq_cnt":["col1"],
+	"max":[s_amt],
+	"min":[amt],
+	"avg":[amt]
+},
+{"chk_id":2,
+	"condition":"",
+	"sum":["col1", "col3"],
+	"unq_cnt":["col4"],
+	"max":[s_amt],
+	"min":[amt],
+	"avg":[amt]
+}
+]
+ 
+Result Output:
+ 
+"fun_rcon":[
+{	
+	"chk_id":1,
+	"condition":"t_date_desc = '2024-11-20 00:00:00.000'",
+	"sum":["col1", "col2"],
+	"unq_cnt":["col3"],
+	"max":[],
+	"min":[],
+	"avg":[],
+	"qry":"SELECT SUM(col1), SUM(col2), count(distinct col1) FROM TABLE WHERE t_date_desc = '2024-11-20 00:00:00.000'",
+	"result":[{SUM(col1):332432, SUM(col2):32432, count(distinct col1):32}]
+},
+{	
+	"chk_id":2,
+	"condition":"",
+	"sum":["col1", "col3"],
+	"unq_cnt":["col4"],
+	"max":[],
+	"min":[],
+	"avg":[],
+	"qry":"SELECT SUM(col1), SUM(col2), count(distinct col1) FROM TABLE",
+	"result":[{SUM(col1):31231332432, SUM(col2):32431332, count(distinct col1):321}]
+}
+]

@@ -1,25 +1,24 @@
-from framework.utils.LoggerUtils import LoggerUtils as logger
+from framework.utils.LoggerUtils import LoggerUtils
 from framework.factory.ClassFactory import ClassFactory as cf 
-from framework.jobs.DataComparator import data_comparator
+# from framework.jobs.DataComparator import DataComparator
 
 
 class test_handler(object):
 
     @staticmethod
-    def call_test(test_name,details):
-        engine = details['engine']
-        test_map = {
-            'count_and_pk_check': 'getTotalCountandPKCount',
-            'ddl_check': 'getDDL',
-            'functional_recon': 'func_check',
-            'data_check': 'getData'
-        }
-        func_name = test_map.get(test_name) if test_map.get(test_name) else None
-        module = cf.getEngineClass(engine)
-        return getattr(module, func_name)(details)
+    def call_test(func_name,details):
+        logger = LoggerUtils.logger
+        try:
+            engine = details['engine']
+            module = cf.getEngineClass(engine)
+            # obj = module(details)
+            return getattr(module, func_name)(details)    
+        except Exception as ex:
+            logger.error(f"An unexpected error occurred in main module while fetching and calling the test. {ex}")
+            return None
     
-    @staticmethod 
-    def data_compare(details):
-        response = data_comparator.compare_dataframes(details)
-        return response
+    # @staticmethod 
+    # def data_compare(details):
+    #     response = DataComparator.compare_dataframes(details)
+    #     return response
         

@@ -10,8 +10,8 @@ class SecretUtils():
     def getSecret(secret_name, region_name="ap-south-1"):
         logs.basicConfig()
         logs.getLogger().setLevel(logs.INFO)
-        session = boto3.session.Session()
-        client = session.client(service_name='secretsmanager', region_name=region_name)
+        # session = boto3.session.Session()
+        client = boto3.client(service_name='secretsmanager', region_name=region_name)
         logs.info("::::Getting Secret of {}".format(secret_name))
         try:
             get_secret_value_response = client.get_secret_value(SecretId=secret_name)
